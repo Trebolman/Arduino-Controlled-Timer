@@ -1,43 +1,60 @@
 #include <LiquidCrystal.h>
 #include <TimerOne.h>
 
-int seg = 0;
-int minutos = 0;
-int hora = 0;
+int seg = 0, _seg = 0;
+int minutos = 0, _minutos = 0;
+int hora = 0, _hora = 0;
 
 //  ENTRADAS
-uint8_t btnConfig = 15;
-uint8_t btnMas = 16;
-uint8_t btnMin = 17;
-uint8_t btnSalir = 14;
+const uint8_t btnParar    = 14;
+const uint8_t btnIniciar  = 15;
+const uint8_t btnConfig   = 16;
+const uint8_t btnMas      = 17;
+const uint8_t btnMin      = 18;
+const uint8_t btnSalir    = 19;
+const uint8_t btnEmergencia = 20;
 
 // SALIDAS
-uint8_t salida = 18;
+uint8_t salida1     = 3;
+uint8_t salida2     = 4;
+uint8_t salida3     = 21;
 
 // VARIABLES DE CONTROL
-int delayPush = 200;
-bool TempActivo = false;
-int limite = 0, contador = 0;
-// bool level = HIGH;
+int     delayPush   = 200;
+bool    TempActivo  = false;
+int     limite      = 0, contador = 0;
+bool    Emergencia  = false;
+bool    EstadoEmergencia = false;
+unsigned long   previo = 0;
+
 LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
 
 // VARIABLES ANTIREBOTE
 const int tiempoAntirebote = 10;
-int cuenta = 0; //Guarda el numero de veces que el boton ha sido presionado
+int estadoBtnParar;
+int estadoBtnIniciar;
+int estadoBtnEmergencia;
 int estadoBtnMas;
 int estadoBtnMin;
 int estadoBtnSalir;
 int estadoBtnConfig;
 int estadoBotonAnterior;
 
+// INICIO DE PROGRAMA
 void setup(void)
-{ // MODOS DE PINES pinMode(led, OUTPUT);
-    pinMode(btnConfig, INPUT);
-    pinMode(btnMin, INPUT);
+{ 
+    // MODOS DE PINES
+    pinMode(btnParar, INPUT);
+    pinMode(btnIniciar, INPUT);
     pinMode(btnConfig, INPUT);
     pinMode(btnMas, INPUT);
+    pinMode(btnMin, INPUT);
     pinMode(btnSalir, INPUT);
-    pinMode(salida, OUTPUT);
+    pinMode(btnEmergencia, INPUT);
+    
+    pinMode(salida1, OUTPUT);
+    pinMode(salida2, OUTPUT);
+    pinMode(salida3, OUTPUT);
 
     // CONFIGURAMOS EL TIMER
     Timer1.initialize(1000000);        // Dispara cada segundo
@@ -45,11 +62,13 @@ void setup(void)
     Serial.begin(9600);
     noInterrupts();
 
-    digitalWrite(salida, HIGH);
+    digitalWrite(salida1, HIGH);
+    digitalWrite(salida2, HIGH);
+    digitalWrite(salida3, HIGH);
 
     // CONFIGURANDO EL LCD
     lcd.begin(16, 2);
-
+    ImprimirEstado();
     ImprimirLineas();
     ImprimirSeg();
     ImprimirMin();
@@ -60,8 +79,8 @@ void setup(void)
 void ISR_Blink()
 {
     contador++;
-    Serial.println(limite);
-    Serial.println(contador);
+    // Serial.println(limite);
+    // Serial.println(contador);
     // Contador veces se enciende el LED
     ImprimirSeg();
     ImprimirMin();
@@ -92,17 +111,53 @@ void ISR_Blink()
 
 void loop(void)
 {
+    // ImprimirEstado();
+
     if (contador > limite)
     {
+        // Serial.println("contador > limite");
         noInterrupts();
         TempActivo = false;
         contador = 0;
+        seg = _seg;
+        minutos = _minutos;
+        hora = _hora;
+        digitalWrite(salida3, LOW);
+        ImprimirEstado();
     }
 
     if(TempActivo){
-        digitalWrite(salida,LOW);
+        digitalWrite(salida1,LOW);
+        interrupts();
+        // ImprimirEstado();
     }else{
-        digitalWrite(salida,HIGH);
+        digitalWrite(salida1,HIGH);
+        noInterrupts();
+        // ImprimirEstado();
+    }
+
+    estadoBotonAnterior = estadoBtnEmergencia;
+    estadoBtnEmergencia = digitalRead(btnEmergencia);
+    if (estadoBtnEmergencia != estadoBotonAnterior)
+    {
+        Serial.println("btnEmergencia");
+        if (antirebote(btnEmergencia)){
+            if(!EstadoEmergencia){
+                EstadoEmergencia = true;
+                Emergencia = true;
+                TempActivo = !TempActivo;
+                noInterrupts();
+                digitalWrite(salida2,LOW);
+                ImprimirEstado();
+            }else{
+                EstadoEmergencia = false;
+                Emergencia = false;
+                TempActivo = !TempActivo;
+                interrupts();
+                digitalWrite(salida2,HIGH);
+                ImprimirEstado();
+            }
+        }
     }
 
     estadoBotonAnterior = estadoBtnConfig;
@@ -112,39 +167,65 @@ void loop(void)
         if (antirebote(btnConfig)){
             if(!TempActivo)
             ConfigurarTiempos();
+            ImprimirEstado();
         }
     }
 
-    estadoBotonAnterior = estadoBtnMas;
-    estadoBtnMas = digitalRead(btnMas);
-    if (estadoBtnMas != estadoBotonAnterior) // ACTIVAR TEMPORIZADOR
+    estadoBotonAnterior = estadoBtnIniciar;
+    estadoBtnIniciar = digitalRead(btnIniciar);
+    if (estadoBtnIniciar != estadoBotonAnterior) // ACTIVAR TEMPORIZADOR
     {
-        if (antirebote(btnMas)){
-            delay(delayPush);
-            if(TempActivo){noInterrupts(); TempActivo = false;}
-            else{interrupts(); TempActivo = true;}
+        if (antirebote(btnIniciar)){
+            digitalWrite(salida3,HIGH);
+            interrupts();
+            TempActivo = true;
+            ImprimirEstado();
         }
     }
-    // if (digitalRead(btnMin) == HIGH) // DESACTIVAR TEMPORIZADOR
-    // {
-    //     delay(delayPush);
-    //     TempActivo = false;
-    //     noInterrupts();
-    // }
 
-    estadoBotonAnterior = estadoBtnMin;
-    estadoBtnMin = digitalRead(btnMin);
-    if (estadoBtnMin != estadoBotonAnterior) // DESACTIVAR TEMPORIZADOR
+    estadoBotonAnterior = estadoBtnParar;
+    estadoBtnParar = digitalRead(btnParar);
+    if (estadoBtnParar != estadoBotonAnterior) // ACTIVAR TEMPORIZADOR
     {
-        if (antirebote(btnMin)){
-            if(!TempActivo)
-                LimpiarVariables();
+        if (antirebote(btnParar)){
+            noInterrupts();
+            TempActivo = false;
+            ImprimirEstado();
         }
     }
 }
 
 // METODOS
-// ImprimirLineas();
+void ImprimirEstado(){
+
+    if(TempActivo){
+        lcd.clear();
+        lcd.setCursor(4,0);
+        lcd.print("ACTIVADO");
+        ImprimirLineas();
+        ImprimirHora();
+        ImprimirMin();
+        ImprimirSeg();
+    }else{
+        lcd.clear();
+        lcd.setCursor(4,0);
+        lcd.print("DETENIDO");
+        ImprimirLineas();
+        ImprimirHora();
+        ImprimirMin();
+        ImprimirSeg();
+    }
+    if(Emergencia){
+        lcd.clear();
+        lcd.setCursor(4,0);
+        lcd.print("EMERGENCIA");
+        ImprimirLineas();
+        ImprimirHora();
+        ImprimirMin();
+        ImprimirSeg();
+    }
+}
+
 void ImprimirLineas()
 {
     lcd.setCursor(6, 1);
@@ -425,12 +506,11 @@ void ConfigurarTiempos()
         }
         // interrupts();
     }while (flag);
-    ConfigurarLimite();
     lcd.clear();
-    ImprimirLineas();
-    ImprimirHora();
-    ImprimirMin();
-    ImprimirSeg();
+    ConfigurarLimite();
+    _seg = seg;
+    _minutos = minutos;
+    _hora = hora;
     // interrupts();
 }
 
@@ -443,11 +523,11 @@ void LimpiarVariables(){
     ImprimirSeg();
 }
 // FUNCION ANTIREBOTE
-boolean antirebote(int pin)
+bool antirebote(int pin)
 {
     int contador = 0;
-    boolean estado;         // guarda el estado del boton
-    boolean estadoAnterior; // guarda el ultimo estado del boton
+    bool estado;         // guarda el estado del boton
+    bool estadoAnterior; // guarda el ultimo estado del boton
 
     do
     {

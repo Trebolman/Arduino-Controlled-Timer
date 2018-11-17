@@ -115,11 +115,15 @@ void loop(void)
         }
     }
 
-    if (digitalRead(btnMas) == HIGH) // ACTIVAR TEMPORIZADOR
+    estadoBotonAnterior = estadoBtnMas;
+    estadoBtnMas = digitalRead(btnMas);
+    if (estadoBtnMas != estadoBotonAnterior) // ACTIVAR TEMPORIZADOR
     {
-        delay(delayPush);
-        if(TempActivo){noInterrupts(); TempActivo = false;}
-        else{interrupts(); TempActivo = true;}
+        if (antirebote(btnMas)){
+            delay(delayPush);
+            if(TempActivo){noInterrupts(); TempActivo = false;}
+            else{interrupts(); TempActivo = true;}
+        }
     }
     // if (digitalRead(btnMin) == HIGH) // DESACTIVAR TEMPORIZADOR
     // {
@@ -141,6 +145,16 @@ void loop(void)
 
 // METODOS
 // ImprimirLineas();
+void ImprimirEstados(){
+    if(TempActivo){
+        lcd.setCursor(4,0);
+        lcd.print("TEMP. ACTIVO");
+    }else{
+        lcd.setCursor(4,0);
+        lcd.print("TEMP. DETENIDO");
+    }
+}
+
 void ImprimirLineas()
 {
     lcd.setCursor(6, 1);
