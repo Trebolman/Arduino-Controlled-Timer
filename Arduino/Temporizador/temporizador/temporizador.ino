@@ -15,6 +15,7 @@ const uint8_t btnSalir    = 19;
 const uint8_t btnEmergencia = 20;
 
 // SALIDAS
+uint8_t backLight   = 5;
 uint8_t salida1     = 3;
 uint8_t salida2     = 4;
 uint8_t salida3     = 21;
@@ -26,6 +27,7 @@ int     limite      = 0, contador = 0;
 bool    Emergencia  = false;
 bool    EstadoEmergencia = false;
 unsigned long   previo = 0;
+int     TiempoBackLight = 10;
 
 LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
 
@@ -55,6 +57,7 @@ void setup(void)
     pinMode(salida1, OUTPUT);
     pinMode(salida2, OUTPUT);
     pinMode(salida3, OUTPUT);
+    pinMode(backLight, OUTPUT);
 
     // CONFIGURAMOS EL TIMER
     Timer1.initialize(1000000);        // Dispara cada segundo
@@ -65,6 +68,7 @@ void setup(void)
     digitalWrite(salida1, HIGH);
     digitalWrite(salida2, HIGH);
     digitalWrite(salida3, HIGH);
+    digitalWrite(backLight, HIGH);
 
     // CONFIGURANDO EL LCD
     lcd.begin(16, 2);
@@ -79,8 +83,7 @@ void setup(void)
 void ISR_Blink()
 {
     contador++;
-    // Serial.println(limite);
-    // Serial.println(contador);
+    TiempoBackLight++;
     // Contador veces se enciende el LED
     ImprimirSeg();
     ImprimirMin();
@@ -124,6 +127,8 @@ void loop(void)
         hora = _hora;
         digitalWrite(salida3, LOW);
         ImprimirEstado();
+        digitalWrite(backLight, HIGH);
+        ReiniciarTiempoBackLight();
     }
 
     if(TempActivo){
@@ -135,6 +140,9 @@ void loop(void)
         noInterrupts();
         // ImprimirEstado();
     }
+
+    if(TiempoBackLight > 10){digitalWrite(backLight,LOW);}
+    // else{}
 
     estadoBotonAnterior = estadoBtnEmergencia;
     estadoBtnEmergencia = digitalRead(btnEmergencia);
@@ -148,6 +156,8 @@ void loop(void)
                 TempActivo = !TempActivo;
                 noInterrupts();
                 digitalWrite(salida2,LOW);
+                digitalWrite(salida1,HIGH);
+                ReiniciarTiempoBackLight();
                 ImprimirEstado();
             }else{
                 EstadoEmergencia = false;
@@ -155,6 +165,7 @@ void loop(void)
                 TempActivo = !TempActivo;
                 interrupts();
                 digitalWrite(salida2,HIGH);
+                ReiniciarTiempoBackLight();
                 ImprimirEstado();
             }
         }
@@ -165,6 +176,7 @@ void loop(void)
     if (estadoBtnConfig != estadoBotonAnterior)
     {
         if (antirebote(btnConfig)){
+            ReiniciarTiempoBackLight();
             if(!TempActivo)
             ConfigurarTiempos();
             ImprimirEstado();
@@ -176,6 +188,7 @@ void loop(void)
     if (estadoBtnIniciar != estadoBotonAnterior) // ACTIVAR TEMPORIZADOR
     {
         if (antirebote(btnIniciar)){
+            ReiniciarTiempoBackLight();
             digitalWrite(salida3,HIGH);
             interrupts();
             TempActivo = true;
@@ -188,6 +201,7 @@ void loop(void)
     if (estadoBtnParar != estadoBotonAnterior) // ACTIVAR TEMPORIZADOR
     {
         if (antirebote(btnParar)){
+            ReiniciarTiempoBackLight();
             noInterrupts();
             TempActivo = false;
             ImprimirEstado();
@@ -196,6 +210,11 @@ void loop(void)
 }
 
 // METODOS
+void ReiniciarTiempoBackLight(){
+    TiempoBackLight = 0;
+    digitalWrite(backLight,HIGH);
+}
+
 void ImprimirEstado(){
 
     if(TempActivo){
@@ -511,6 +530,7 @@ void ConfigurarTiempos()
     _seg = seg;
     _minutos = minutos;
     _hora = hora;
+    ReiniciarTiempoBackLight();
     // interrupts();
 }
 
