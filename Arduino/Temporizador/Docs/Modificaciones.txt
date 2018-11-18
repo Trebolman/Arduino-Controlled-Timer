@@ -1,0 +1,6 @@
+Cambios 17/11/2018
+1) Arreglar lo del boton Emergencia. (hecho)
+2) Hacer solo un boton Inicio/Stop. (hecho)
+3) Eliminar el boton Salir. (hecho)
+4) Desactivar outFinalTiempo al presionar btnIniciar (hecho)
+3) Modificar minutos cuando se setea 1 hora (hecho)

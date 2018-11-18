@@ -15,10 +15,10 @@ const uint8_t btnSalir    = 19;
 const uint8_t btnEmergencia = 20;
 
 // SALIDAS
-uint8_t backLight   = 5;
+uint8_t backLight   = 21;
 uint8_t salida1     = 3;
 uint8_t salida2     = 4;
-uint8_t salida3     = 21;
+uint8_t salida3     = 5;
 
 // VARIABLES DE CONTROL
 int     delayPush   = 200;
