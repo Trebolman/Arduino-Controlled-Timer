@@ -148,13 +148,43 @@ void loop(void)
         }
     }
 
+    estadoBotonAnterior = estadoBtnMas;
+    estadoBtnMas = digitalRead(btnMas);
+    if (estadoBtnMas != estadoBotonAnterior)
+    {
+        if (antirebote(btnMas)){
+            ReiniciarTiempoBackLight();
+        }
+    }
+
+    estadoBotonAnterior = estadoBtnMin;
+    estadoBtnMin = digitalRead(btnMin);
+    if (estadoBtnMin != estadoBotonAnterior)
+    {
+        if (antirebote(btnMin)){
+            ReiniciarTiempoBackLight();
+        }
+    }
+
     estadoBotonAnterior = estadoBtnInicioPara;
     estadoBtnInicioPara = digitalRead(btnInicioPara);
     if (estadoBtnInicioPara != estadoBotonAnterior) // ACTIVAR TEMPORIZADOR
     {
         if (antirebote(btnInicioPara)){
             ReiniciarTiempoBackLight();
-            if(TempActivo){ReiniciarTiempoBackLight(); noInterrupts(); TempActivo = false;}
+            if(TempActivo){
+                ReiniciarTiempoBackLight(); 
+                noInterrupts(); 
+                TempActivo = false;
+                hora = _hora;
+                minutos = _minutos;
+                seg = _seg;
+                limite = 0;
+                contador = 0;
+                ConfigurarTiempos();
+                ReiniciarTiempoBackLight();
+                ImprimirEstado();
+            }
             else{
                 interrupts(); 
                 TempActivo = true;

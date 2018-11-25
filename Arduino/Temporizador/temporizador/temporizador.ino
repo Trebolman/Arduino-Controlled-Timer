@@ -16,9 +16,9 @@ const uint8_t btnEmergencia = 19;
 
 // SALIDAS
 uint8_t backLight   = 3;
-uint8_t outTiempo      = 13;    //
-uint8_t outEmergencia  = 12;    // 
-uint8_t outFinalTiempo = 11;    //
+uint8_t outTiempo      = 12;    //
+uint8_t outEmergencia  = 11;    // 
+uint8_t outFinalTiempo = 10;    //
 
 // VARIABLES DE CONTROL
 int     delayPush   = 200;
