@@ -26,7 +26,7 @@ int     delayPush   = 200;
 bool    TempActivo  = false;
 int     limite      = 0, contador = 0, segundero = 0;
 bool    Emergencia  = false;
-bool    EstadoEmergencia = true;
+bool    EstadoEmergencia = false;
 // unsigned long   previo = 0;
 int     TiempoBackLight = 10;
 
@@ -130,6 +130,7 @@ void loop(void)
     {
         // Serial.println("contador > limite");
         // noInterrupts();
+        digitalWrite(outTiempo, HIGH);
         TempActivo = false;
         contador = 0;
         seg = _seg;
@@ -553,9 +554,10 @@ void ConfigurarTiempos()
 }
 
 void VerificarBtnEmergencia(){
-    estadoBotonAnterior = estadoBtnEmergencia;
-    estadoBtnEmergencia = digitalRead(btnEmergencia);
-    if (estadoBtnEmergencia != estadoBotonAnterior)
+    // estadoBotonAnterior = estadoBtnEmergencia;
+    // estadoBtnEmergencia = digitalRead(btnEmergencia);
+    // if (estadoBtnEmergencia != estadoBotonAnterior)
+    if (digitalRead(btnEmergencia)==LOW)
     {
         // Serial.println("btnEmergencia");
         if (antirebote(btnEmergencia)){
