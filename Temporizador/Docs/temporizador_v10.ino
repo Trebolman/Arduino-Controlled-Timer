@@ -26,7 +26,7 @@ int     delayPush   = 200;
 bool    TempActivo  = false;
 int     limite      = 0, contador = 0, segundero = 0;
 bool    Emergencia  = false;
-bool    EstadoEmergencia = false;
+bool    EstadoEmergencia = true;
 // unsigned long   previo = 0;
 int     TiempoBackLight = 10;
 
@@ -574,8 +574,8 @@ void VerificarBtnEmergencia(){
             contador = 0;
             ReiniciarTiempoBackLight();
             ImprimirEstado();
-            while(!EstadoEmergencia){
-                if(digitalRead(btnEmergencia) == EstadoEmergencia){
+            while(digitalRead(btnEmergencia) == LOW){
+                if(digitalRead(btnEmergencia) == HIGH){
                     break;
                 }
             }
