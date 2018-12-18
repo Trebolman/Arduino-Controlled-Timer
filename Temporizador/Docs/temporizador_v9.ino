@@ -24,7 +24,7 @@ uint8_t outFinalTiempo = 11;    //
 // VARIABLES DE CONTROL
 int     delayPush   = 200;
 bool    TempActivo  = false;
-int     limite      = 0, contador = 0;
+int     limite      = 0, contador = 0, segundero = 0;
 bool    Emergencia  = false;
 bool    EstadoEmergencia = true;
 // unsigned long   previo = 0;
@@ -66,15 +66,17 @@ void setup(void)
 
     // CONFIGURAMOS EL TIMER1
     Timer1.initialize(1000000);        // Dispara cada segundo
-    Timer1.attachInterrupt(ISR_Blink); // Activa la interrupcion y la
+    Timer1.attachInterrupt(ISR_Blink); // 
+
     // CONFIGURAMOS EL TIMER3
-    Timer3.initialize(4000000);        // Dispara cada segundo
-    Timer3.attachInterrupt(ISR_Seg); // Activa la interrupcion y la
+    Timer3.initialize(1000000);        // Dispara cada segundo
+    Timer3.attachInterrupt(ISR_Seg); //
     Timer3.stop();
     // Serial.begin(9600);
     noInterrupts();
 
     // CONFIGURANDO EL LCD
+    // Serial.begin(9600);
     lcd.begin(16, 2);
     ImprimirEstado();
     ImprimirLineas();
@@ -117,9 +119,7 @@ void ISR_Blink()
 }
 
 void ISR_Seg(){
-    digitalWrite(outFinalTiempo, HIGH);
-    Timer3.stop();
-    noInterrupts();
+    segundero++;
 }
 
 void loop(void)
@@ -129,21 +129,31 @@ void loop(void)
     if (contador > limite)
     {
         // Serial.println("contador > limite");
-        noInterrupts();
+        // noInterrupts();
         TempActivo = false;
         contador = 0;
         seg = _seg;
         minutos = _minutos;
         hora = _hora;
-        digitalWrite(outFinalTiempo, LOW);
 
+        Timer1.stop();
+        segundero = 0;
         Timer3.start();
-        interrupts();
-        
+        while(segundero < 4){
+            // Serial.println(segundero);
+            digitalWrite(outFinalTiempo, LOW);
+        }
+        digitalWrite(outFinalTiempo, HIGH);
+        Timer3.stop();
+        Timer1.start();
+        noInterrupts();
         ImprimirEstado();
+
+
         digitalWrite(backLight, HIGH);
         ReiniciarTiempoBackLight();
     }
+
 
     VerificarEstadoTemporizador();
 
@@ -202,6 +212,7 @@ void loop(void)
             }
             else{
                 interrupts();
+                // Timer1.start();
                 TempActivo = true;
                 ReiniciarTiempoBackLight();
                 digitalWrite(outFinalTiempo,HIGH);
