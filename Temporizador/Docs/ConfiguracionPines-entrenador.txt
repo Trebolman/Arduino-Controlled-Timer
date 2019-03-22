@@ -1,0 +1,12 @@
+//  ENTRADAS
+const uint8_t btnConfig   	= 15 | D0;
+const uint8_t btnMas      	= 16 | D1;
+const uint8_t btnMin      	= 17 | D2;
+const uint8_t btnInicioPara    	= 18 | D3;
+const uint8_t btnEmergencia 	= 19 | D4;
+
+// SALIDAS
+uint8_t backLight   		= 03;
+uint8_t outTiempo      		= 12 | E0;    //
+uint8_t outEmergencia  		= 11 | E1;    //
+uint8_t outFinalTiempo 		= 10 | E2;    //

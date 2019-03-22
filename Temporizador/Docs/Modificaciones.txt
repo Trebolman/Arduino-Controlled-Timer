@@ -13,4 +13,8 @@ Actualizacion 21/11/2018
 
 Actualizacion 17/12/2018
 1) Cambiar el estado activo del btnEmergencia a bajo (hecho)
-2) Añadir un pequeño delay de 4 s a la salida outTiempo 
+2) Añadir un pequeño delay de 4 s a la salida outTiempo (hecho)
+
+Actualización 21/03/2019
+1) Añadir un segundo temporizador configurable
+2) Configurar la salida outTiempo al segundo temporizador
