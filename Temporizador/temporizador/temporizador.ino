@@ -25,7 +25,7 @@ bool TempActivo = false;
 int limite = 0, limite2 = 0, contador = 0, contador2 = 0, segundero = 0;
 bool Emergencia = false;
 
-bool permutador = true;
+bool permutador = false;
 int temp2_encendido = 0, temp2_apagado = 0;
 bool EstadoEmergencia = true;
 int TiempoBackLight = 10;
@@ -175,7 +175,6 @@ void loop(void)
         Timer3.stop();
         Timer1.start();
         noInterrupts();
-        // ImprimirEstado();
 
         digitalWrite(backLight, HIGH);
         ReiniciarTiempoBackLight();
@@ -202,9 +201,6 @@ void loop(void)
         contador2 = 0;
 
         ImprimirEstado();
-
-        // digitalWrite(backLight, HIGH);
-        // ReiniciarTiempoBackLight();
     }
 
     VerificarEstadoTemporizador();
